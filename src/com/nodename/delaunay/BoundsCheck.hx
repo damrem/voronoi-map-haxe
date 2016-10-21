@@ -1,7 +1,9 @@
 package com.nodename.delaunay;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
-import as3.Rectangle;
-import as3.TypeDefs;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 
 using as3.RectangleCore;
 
@@ -22,19 +24,19 @@ class BoundsCheck {
 	public static function check(point:Point, bounds:Rectangle):Int
 	{
 		var value:Int = 0;
-		if (point.x == bounds.left())
+		if (point.x == bounds.left)
 		{
 			value |= LEFT;
 		}
-		if (point.x == bounds.right())
+		if (point.x == bounds.right)
 		{
 			value |= RIGHT;
 		}
-		if (point.y == bounds.top())
+		if (point.y == bounds.top)
 		{
 			value |= TOP;
 		}
-		if (point.y == bounds.bottom())
+		if (point.y == bounds.bottom)
 		{
 			value |= BOTTOM;
 		}

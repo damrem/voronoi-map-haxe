@@ -1,11 +1,15 @@
 package com.nodename.delaunay;
 
-import as3.Rectangle;
-import as3.TypeDefs;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 import com.nodename.delaunay.EdgeReorderer;
 import com.nodename.geom.Circle;
 import com.nodename.geom.LineSegment;
 import de.polygonal.math.PM_PRNG;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl.utils.Dictionary;
 
 using Lambda;
 using Std;
@@ -15,9 +19,9 @@ class Voronoi {
 
 	private var _prng:PM_PRNG;
 	private var _sites:SiteList;
-	private var _sitesIndexedByLocation:Dictionary<Site>;
-	private var _triangles:Vector<Triangle>;
-	private var _edges:Vector<Edge>;
+	private var _sitesIndexedByLocation:Dictionary<String, Site>;
+	private var _triangles:Array<Triangle>;
+	private var _edges:Array<Edge>;
 
 	// TODO generalize this so it doesn't have to be a rectangle;
 	// then we can make the fractal voronois-within-voronois
@@ -55,7 +59,7 @@ class Voronoi {
 		_sitesIndexedByLocation = null;
 	}
 
-	public function new(points:Vector<Point>, colors:Vector<UInt>, plotBounds:Rectangle)
+	public function new(points:Array<Point>, colors:Array<UInt>, plotBounds:Rectangle)
 	{	
 		makeSureNoDuplicatePoints(points);
 		(_prng = new PM_PRNG()).seed = 1;
@@ -63,8 +67,8 @@ class Voronoi {
 		_sitesIndexedByLocation = new Dictionary();
 		addSites(points, colors);
 		this.plotBounds = plotBounds;
-		_triangles = new Vector<Triangle>();
-		_edges = new Vector<Edge>();
+		_triangles = new Array<Triangle>();
+		_edges = new Array<Edge>();
 		fortunesAlgorithm();
 //		for(edge in _edges) {
 //			trace([edge.a, edge.b, edge.c]);
@@ -77,7 +81,7 @@ class Voronoi {
 	 * This means duplicate coordinates can't be stored in hash.
 	 * Prevent this case until it's possible to store duplicate points coords.
 	 */
-	private function makeSureNoDuplicatePoints(points:Vector<Point>) {
+	private function makeSureNoDuplicatePoints(points:Array<Point>) {
 		var h = new Map<String, Point>();
 		for (p in points) {
 			if (h.exists(p.hash())) {
@@ -87,7 +91,7 @@ class Voronoi {
 		}
 	}
 
-	private function addSites(points:Vector<Point>, colors:Vector<UInt>):Void
+	private function addSites(points:Array<Point>, colors:Array<UInt>):Void
 	{
 		var length:UInt = points.length;
 		for (i in 0...length)
@@ -98,37 +102,37 @@ class Voronoi {
 	
 	private function addSite(p:Point, color:UInt, index:Int):Void
 	{
-		var weight:Number = _prng.nextDouble() * 100;
+		var weight:Float = _prng.nextDouble() * 100;
 		var site:Site = Site.create(p, index, weight, color);
 		_sites.push(site);
 		_sitesIndexedByLocation.set(p.hash(), site);
 	}
 
-	public function edges():Vector<Edge>
+	public function edges():Array<Edge>
 	{
 		return _edges;
 	}
 	
-	public function region(p:Point):Vector<Point>
+	public function region(p:Point):Array<Point>
 	{
 		var site:Site = _sitesIndexedByLocation.get(p.hash());
 		if (site == null)
 		{
-			return new Vector<Point>();
+			return new Array<Point>();
 		}
 		return site.region(plotBounds);
 	}
 
 	  // TODO: bug: if you call this before you call region(), something goes wrong :(
-	public function neighborSitesForSite(coord:Point):Vector<Point>
+	public function neighborSitesForSite(coord:Point):Array<Point>
 	{
-		var points:Vector<Point> = new Vector<Point>();
+		var points:Array<Point> = new Array<Point>();
 		var site:Site = _sitesIndexedByLocation.get(coord.hash());
 		if (site == null)
 		{
 			return points;
 		}
-		var sites:Vector<Site> = site.neighborSites();
+		var sites:Array<Site> = site.neighborSites();
 		var neighbor:Site;
 		for (neighbor in sites)
 		{
@@ -137,48 +141,48 @@ class Voronoi {
 		return points;
 	}
 	
-	public function circles():Vector<Circle>
+	public function circles():Array<Circle>
 	{
 		return _sites.circles();
 	}
 	
-	public function voronoiBoundaryForSite(coord:Point):Vector<LineSegment>
+	public function voronoiBoundaryForSite(coord:Point):Array<LineSegment>
 	{
 		return Delaunay.visibleLineSegments(Delaunay.selectEdgesForSitePoint(coord, _edges));
 	}
 
-	public function delaunayLinesForSite(coord:Point):Vector<LineSegment>
+	public function delaunayLinesForSite(coord:Point):Array<LineSegment>
 	{
 		return Delaunay.delaunayLinesForEdges(Delaunay.selectEdgesForSitePoint(coord, _edges));
 	}
 	
-	public function voronoiDiagram():Vector<LineSegment>
+	public function voronoiDiagram():Array<LineSegment>
 	{
 		return Delaunay.visibleLineSegments(_edges);
 	}
 	
-	public function delaunayTriangulation(keepOutMask:BitmapData = null):Vector<LineSegment>
+	public function delaunayTriangulation(keepOutMask:BitmapData = null):Array<LineSegment>
 	{
 		return Delaunay.delaunayLinesForEdges(Delaunay.selectNonIntersectingEdges(keepOutMask, _edges));
 	}
 	
-	public function hull():Vector<LineSegment>
+	public function hull():Array<LineSegment>
 	{
 		return Delaunay.delaunayLinesForEdges(hullEdges());
 	}
 	
-	private function hullEdges():Vector<Edge>
+	private function hullEdges():Array<Edge>
 	{
-		return _edges.filter(function (edge:Edge):Boolean {
+		return _edges.filter(function (edge:Edge):Bool {
 			return (edge.isPartOfConvexHull());
 		}).array();
 	}
 
-	public function hullPointsInOrder():Vector<Point>
+	public function hullPointsInOrder():Array<Point>
 	{
-		var hullEdges:Vector<Edge> = hullEdges();
+		var hullEdges:Array<Edge> = hullEdges();
 		
-		var points:Vector<Point> = new Vector<Point>();
+		var points:Array<Point> = new Array<Point>();
 		if (hullEdges.length == 0)
 		{
 			return points;
@@ -186,7 +190,7 @@ class Voronoi {
 		
 		var reorderer:EdgeReorderer = new EdgeReorderer(hullEdges, Criterion.site);
 		hullEdges = reorderer.edges;
-		var orientations:Vector<LR> = reorderer.edgeOrientations;
+		var orientations:Array<LR> = reorderer.edgeOrientations;
 		reorderer.dispose();
 		
 		var orientation:LR;
@@ -201,19 +205,19 @@ class Voronoi {
 		return points;
 	}
 	
-	public function spanningTree(type:String = "minimum", keepOutMask:BitmapData = null):Vector<LineSegment>
+	public function spanningTree(type:String = "minimum", keepOutMask:BitmapData = null):Array<LineSegment>
 	{
-		var edges:Vector<Edge> = Delaunay.selectNonIntersectingEdges(keepOutMask, _edges);
-		var segments:Vector<LineSegment> = Delaunay.delaunayLinesForEdges(edges);
+		var edges:Array<Edge> = Delaunay.selectNonIntersectingEdges(keepOutMask, _edges);
+		var segments:Array<LineSegment> = Delaunay.delaunayLinesForEdges(edges);
 		return Kruskal.kruskal(segments, type);
 	}
 
-	public function regions():Vector<Vector<Point>>
+	public function regions():Array<Array<Point>>
 	{
 		return _sites.regions(plotBounds);
 	}
 	
-	public function siteColors(referenceImage:BitmapData = null):Vector<UInt>
+	public function siteColors(referenceImage:BitmapData = null):Array<Int>
 	{
 		return _sites.siteColors(referenceImage);
 	}
@@ -231,7 +235,7 @@ class Voronoi {
 		return _sites.nearestSitePoint(proximityMap, x, y);
 	}
 	
-	public function siteCoords():Vector<Point>
+	public function siteCoords():Array<Point>
 	{
 		return _sites.siteCoords();
 	}
@@ -250,8 +254,8 @@ class Voronoi {
 		var sqrt_nsites:Int = Std.int(Math.sqrt(_sites.length + 4));
 		var heap:HalfedgePriorityQueue = new HalfedgePriorityQueue(dataBounds.y, dataBounds.height, sqrt_nsites);
 		var edgeList:EdgeList = new EdgeList(dataBounds.x, dataBounds.width, sqrt_nsites);
-		var halfEdges:Vector<Halfedge> = new Vector<Halfedge>();
-		var vertices:Vector<Vertex> = new Vector<Vertex>();
+		var halfEdges:Array<Halfedge> = new Array<Halfedge>();
+		var vertices:Array<Vertex> = new Array<Vertex>();
 		
 		var bottomMostSite:Site = _sites.next();
 		newSite = _sites.next();
@@ -431,7 +435,7 @@ class Voronoi {
 		return compareByYThenX(s1.x, s1.y, s2.x, s2.y);
 	}
 
-	public static function compareByYThenX(s1x:Number, s1y:Number, s2x:Number, s2y:Number):Int
+	public static function compareByYThenX(s1x:Float, s1y:Float, s2x:Float, s2y:Float):Int
 	{
 		if (s1y < s2y) return -1;
 		if (s1y > s2y) return 1;

@@ -9,7 +9,7 @@ class ConversionCore {
 	}
 	
 	public static inline function booleanFromInt(i:Int):Boolean {
-		return (i == null) ? false : i > 0;
+		return i > 0;
 	}
 	
 }

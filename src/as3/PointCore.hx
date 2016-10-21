@@ -25,8 +25,9 @@
  */
 
 package as3;
+import openfl.geom.Point;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 
 using Math;
 
@@ -35,11 +36,11 @@ class PointCore {
 	/**
 	 * The length of the line segment from (0,0) to this point.
 	 */
-	public static function distanceFromOrigin( p : Point ) : Number {
+	public static function distanceFromOrigin( p : Point ) : Float {
 		return Math.sqrt(p.x * p.x + p.y * p.y);
 	}
 	
-	public static function distance( a : Point, b : Point ) : Number {
+	public static function distance( a : Point, b : Point ) : Float {
 		return (	(a.x - b.x).pow(2)
 				  + (a.y - b.y).pow(2)	).sqrt();
 	}
@@ -54,8 +55,8 @@ class PointCore {
 	 * @param	f The level of interpolation between the two points. Indicates where the new point will be, along the line between pt1 and pt2. If f=1, pt1 is returned; if f=0, pt2 is returned.
 	 * @return The new, interpolated point.
 	 */
-	public static function interpolate(pt1:Point, pt2:Point, f:Number):Point {
-		return { x:(pt1.x - pt2.x) * f + pt2.x, y:(pt1.y - pt2.y) * f + pt2.y };
+	public static function interpolate(pt1:Point, pt2:Point, f:Float):Point {
+		return new Point((pt1.x - pt2.x) * f + pt2.x, (pt1.y - pt2.y) * f + pt2.y );
 	}	
 
 	/**
@@ -76,7 +77,7 @@ class PointCore {
 	 * Adds the coordinates of 2 points to create a new point.
 	 */
 	public static function add( p1 : Point, p2 : Point) : Point {
-		return { x: p2.x + p1.x, y: p2.y + p1.y };
+		return new Point(p2.x + p1.x, p2.y + p1.y );
 	}
    
 	/**
@@ -86,7 +87,7 @@ class PointCore {
 	 * @return
 	 */
     public static inline function subtract(p0:Point, p1:Point) : Point {
-        return { x:p0.x - p1.x, y:p0.y - p1.y };
+        return new Point(p0.x - p1.x, p0.y - p1.y );
     }
 	
 	public static function hash(p:Point):String {

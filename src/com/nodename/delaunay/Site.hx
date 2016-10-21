@@ -1,8 +1,10 @@
 package com.nodename.delaunay;
 
 import as3.PointCore;
-import as3.Rectangle;
-import as3.TypeDefs;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 import com.nodename.geom.Polygon;
 import com.nodename.geom.Winding;
 
@@ -12,8 +14,8 @@ using as3.RectangleCore;
 
 class Site implements ICoord {
 
-	private static var _pool:Vector<Site> = new Vector<Site>();
-	public static function create(p:Point, index:Int, weight:Number, color:UInt):Site
+	private static var _pool:Array<Site> = new Array<Site>();
+	public static function create(p:Point, index:Int, weight:Float, color:UInt):Site
 	{
 		if (_pool.length > 0)
 		{
@@ -33,7 +35,7 @@ class Site implements ICoord {
 	 * haha "also" - means more than one responsibility...
 	 * 
 	 */
-	public static function sortSites(sites:Vector<Site>):Void
+	public static function sortSites(sites:Array<Site>):Void
 	{
 		sites.sort(Voronoi.compareSiteByYThenX);
 		for (i in 0...sites.length) {
@@ -41,8 +43,8 @@ class Site implements ICoord {
 		}
 	}
 	
-	private static inline var EPSILON:Number = .005;
-	private static function closeEnough(p0:Point, p1:Point):Boolean
+	private static inline var EPSILON:Float = .005;
+	private static function closeEnough(p0:Point, p1:Point):Bool
 	{
 		return PointCore.distance(p0, p1) < EPSILON;
 	}
@@ -54,34 +56,34 @@ class Site implements ICoord {
 	
 
 	public var color:UInt;
-	public var weight:Number;
+	public var weight:Float;
 	
 	private var _siteIndex:UInt;
 	
 	// the edges that define this Site's Voronoi region:
-	private var _edges:Vector<Edge>;
-	public var edges(get_edges, null):Vector<Edge>;
-	inline function get_edges():Vector<Edge>
+	private var _edges:Array<Edge>;
+	public var edges(get_edges, null):Array<Edge>;
+	inline function get_edges():Array<Edge>
 	{
 		return _edges;
 	}
 	// which end of each edge hooks up with the previous edge in _edges:
-	private var _edgeOrientations:Vector<LR>;
+	private var _edgeOrientations:Array<LR>;
 	// ordered list of points that define the region clipped to bounds:
-	private var _region:Vector<Point>;
+	private var _region:Array<Point>;
 
-	private function new(p:Point, index:Int, weight:Number, color:UInt)
+	private function new(p:Point, index:Int, weight:Float, color:UInt)
 	{
 		init(p, index, weight, color);
 	}
 
-	private function init(p:Point, index:Int, weight:Number, color:UInt):Site
+	private function init(p:Point, index:Int, weight:Float, color:UInt):Site
 	{
 		_coord = p;
 		_siteIndex = index;
 		this.weight = weight;
 		this.color = color;
-		_edges = new Vector<Edge>();
+		_edges = new Array<Edge>();
 		_region = null;
 		return this;
 	}
@@ -131,17 +133,17 @@ class Site implements ICoord {
 		return _edges[0];
 	}
 	
-	public function neighborSites():Vector<Site>
+	public function neighborSites():Array<Site>
 	{
 		if (_edges == null || _edges.length == 0)
 		{
-			return new Vector<Site>();
+			return new Array<Site>();
 		}
 		if (_edgeOrientations == null)
 		{ 
 			reorderEdges();
 		}
-		var list:Vector<Site> = new Vector<Site>();
+		var list:Array<Site> = new Array<Site>();
 		var edge:Edge;
 		for (edge in _edges)
 		{
@@ -163,11 +165,11 @@ class Site implements ICoord {
 		return null;
 	}
 	
-	public function region(clippingBounds:Rectangle):Vector<Point>
+	public function region(clippingBounds:Rectangle):Array<Point>
 	{
 		if (_edges == null || _edges.length == 0)
 		{
-			return new Vector<Point>();
+			return new Array<Point>();
 		}
 		if (_edgeOrientations == null)
 		{ 
@@ -191,9 +193,9 @@ class Site implements ICoord {
 		reorderer.dispose();
 	}
 
-	private function clipToBounds(bounds:Rectangle):Vector<Point>
+	private function clipToBounds(bounds:Rectangle):Array<Point>
 	{
-		var points:Vector<Point> = new Vector<Point>();
+		var points:Array<Point> = new Array<Point>();
 		var n:Int = _edges.length;
 		var i:Int = 0;
 		var edge:Edge;
@@ -205,7 +207,7 @@ class Site implements ICoord {
 		if (i == n)
 		{
 			// no edges visible
-			return new Vector<Point>();
+			return new Array<Point>();
 		}
 		edge = _edges[i];
 		var orientation:LR = _edgeOrientations[i];
@@ -227,7 +229,7 @@ class Site implements ICoord {
 		return points;
 	}
 	
-	private function connect(points:Vector<Point>, j:Int, bounds:Rectangle, closingUp:Boolean = false):Void
+	private function connect(points:Array<Point>, j:Int, bounds:Rectangle, closingUp:Bool = false):Void
 	{
 		var rightPoint:Point = points[points.length - 1];
 		var newEdge:Edge = _edges[j];
@@ -248,113 +250,113 @@ class Site implements ICoord {
 				// around the bounds and included the smaller part rather than the larger)
 				var rightCheck:Int = BoundsCheck.check(rightPoint, bounds);
 				var newCheck:Int = BoundsCheck.check(newPoint, bounds);
-				var px:Number, py:Number;
+				var px:Float, py:Float;
 				if (rightCheck & BoundsCheck.RIGHT != 0)
 				{
-					px = bounds.right();
+					px = bounds.right;
 					if (newCheck & BoundsCheck.BOTTOM != 0)
 					{
-						py = bounds.bottom();
-						points.push({x:px, y:py});
+						py = bounds.bottom;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.TOP != 0)
 					{
-						py = bounds.top();
-						points.push( { x: px, y:py } );
+						py = bounds.top;
+						points.push( new Point(px, py ) );
 					}
 					else if (newCheck & BoundsCheck.LEFT != 0)
 					{
 						if (rightPoint.y - bounds.y + newPoint.y - bounds.y < bounds.height)
 						{
-							py = bounds.top();
+							py = bounds.top;
 						}
 						else
 						{
-							py = bounds.bottom();
+							py = bounds.bottom;
 						}
-						points.push({x:px, y:py});
-						points.push({x:bounds.left(), y:py});
+						points.push(new Point(px, py));
+						points.push(new Point(bounds.left, py));
 					}
 				}
 				else if (rightCheck & BoundsCheck.LEFT != 0)
 				{
-					px = bounds.left();
+					px = bounds.left;
 					if (newCheck & BoundsCheck.BOTTOM != 0)
 					{
-						py = bounds.bottom();
-						points.push({x:px, y:py});
+						py = bounds.bottom;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.TOP != 0)
 					{
-						py = bounds.top();
-						points.push({x:px, y:py});
+						py = bounds.top;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.RIGHT != 0)
 					{
 						if (rightPoint.y - bounds.y + newPoint.y - bounds.y < bounds.height)
 						{
-							py = bounds.top();
+							py = bounds.top;
 						}
 						else
 						{
-							py = bounds.bottom();
+							py = bounds.bottom;
 						}
-						points.push({x:px, y:py});
-						points.push({x:bounds.right(), y:py});
+						points.push(new Point(px, py));
+						points.push(new Point(bounds.right, py));
 					}
 				}
 				else if (rightCheck & BoundsCheck.TOP != 0)
 				{
-					py = bounds.top();
+					py = bounds.top;
 					if (newCheck & BoundsCheck.RIGHT != 0)
 					{
-						px = bounds.right();
-						points.push({x:px, y:py});
+						px = bounds.right;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.LEFT != 0)
 					{
-						px = bounds.left();
-						points.push({x:px, y:py});
+						px = bounds.left;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.BOTTOM != 0)
 					{
 						if (rightPoint.x - bounds.x + newPoint.x - bounds.x < bounds.width)
 						{
-							px = bounds.left();
+							px = bounds.left;
 						}
 						else
 						{
-							px = bounds.right();
+							px = bounds.right;
 						}
-						points.push({x:px, y:py});
-						points.push({x:px, y:bounds.bottom()});
+						points.push(new Point(px, py));
+						points.push(new Point(px, bounds.bottom));
 					}
 				}
 				else if (rightCheck & BoundsCheck.BOTTOM != 0)
 				{
-					py = bounds.bottom();
+					py = bounds.bottom;
 					if (newCheck & BoundsCheck.RIGHT != 0)
 					{
-						px = bounds.right();
-						points.push({x:px, y:py});
+						px = bounds.right;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.LEFT != 0)
 					{
-						px = bounds.left();
-						points.push({x:px, y:py});
+						px = bounds.left;
+						points.push(new Point(px, py));
 					}
 					else if (newCheck & BoundsCheck.TOP != 0)
 					{
 						if (rightPoint.x - bounds.x + newPoint.x - bounds.x < bounds.width)
 						{
-							px = bounds.left();
+							px = bounds.left;
 						}
 						else
 						{
-							px = bounds.right();
+							px = bounds.right;
 						}
-						points.push({x:px, y:py});
-						points.push({x:px, y:bounds.top()});
+						points.push(new Point(px, py));
+						points.push(new Point(px, bounds.top));
 					}
 				}
 			}
@@ -372,18 +374,18 @@ class Site implements ICoord {
 		}
 	}
 
-	public var x(get_x, null):Number;
-	private inline function get_x():Number
+	public var x(get_x, null):Float;
+	private inline function get_x():Float
 	{
 		return _coord.x;
 	}
-	public var y(get_y, null):Number;
-	private inline function get_y():Number
+	public var y(get_y, null):Float;
+	private inline function get_y():Float
 	{
 		return _coord.y;
 	}
 	
-	public function dist(p:ICoord):Number
+	public function dist(p:ICoord):Float
 	{
 		return PointCore.distance(p.coord, this.coord);
 	}	

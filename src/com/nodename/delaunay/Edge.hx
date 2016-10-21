@@ -1,8 +1,12 @@
 package com.nodename.delaunay;
 
 import as3.PointCore;
-import as3.Rectangle;
-import as3.TypeDefs;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl.utils.Dictionary;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 import com.nodename.geom.LineSegment;
 
 using as3.BitmapDataCore;
@@ -10,7 +14,7 @@ using as3.RectangleCore;
 
 class Edge {
 
-	private static var _pool:Vector<Edge> = new Vector<Edge>();
+	private static var _pool:Array<Edge> = new Array<Edge>();
 	
 	/**
 	 * This is the only way to create a new Edge 
@@ -21,8 +25,8 @@ class Edge {
 	 */
 	public static function createBisectingEdge(site0:Site, site1:Site):Edge
 	{
-		var dx:Number, dy:Number, absdx:Number, absdy:Number;
-		var a:Number, b:Number, c:Number;
+		var dx:Float, dy:Float, absdx:Float, absdy:Float;
+		var a:Float, b:Float, c:Float;
 	
 		dx = site1.x - site0.x;
 		dy = site1.y - site0.y;
@@ -102,7 +106,7 @@ class Edge {
 			h = 1;
 		}
 		//var bmp:BitmapData = new BitmapData(w, h, true, 0);
-		var bmp:BitmapData = new BitmapData();
+		var bmp:BitmapData = new BitmapData(w, h, true, 0);
 
 		//GRAPHICS.clear();
 		// clear() resets line style back to undefined!
@@ -134,9 +138,9 @@ class Edge {
 	public static var DELETED:Edge = new Edge();
 
 	// the equation of the edge: ax + by = c
-	public var a:Number;
-	public var b:Number;
-	public var c:Number;
+	public var a:Float;
+	public var b:Float;
+	public var c:Float;
 
 	// the two Voronoi vertices that the edge connects
 	//		(if one of them is null, the edge extends to infinity)
@@ -159,20 +163,20 @@ class Edge {
 		}
 	}
 	
-	public function isPartOfConvexHull():Boolean
+	public function isPartOfConvexHull():Bool
 	{
 		return (leftVertex == null || rightVertex == null);
 	}
 
-	public function sitesDistance():Number
+	public function sitesDistance():Float
 	{
 		return PointCore.distance(leftSite.coord, rightSite.coord);
 	}
 	
 	public static function compareSitesDistances_MAX(edge0:Edge, edge1:Edge):Int
 	{
-		var length0:Number = edge0.sitesDistance();
-		var length1:Number = edge1.sitesDistance();
+		var length0:Float = edge0.sitesDistance();
+		var length1:Float = edge1.sitesDistance();
 		if (length0 < length1)
 		{
 			return 1;
@@ -192,11 +196,11 @@ class Edge {
 	// Once clipVertices() is called, this Dictionary will hold two Points
 	// representing the clipped coordinates of the left and right ends...
 	//private var _clippedVertices:Dictionary;
-	public var clippedEnds(default, null):Dictionary<Point>;
+	public var clippedEnds(default, null):Dictionary<String, Point>;
 	// unless the entire Edge is outside the bounds.
 	// In that case visible will be false:
-	public var visible(get_visible, never):Boolean;
-	private inline function get_visible():Boolean
+	public var visible(get_visible, never):Bool;
+	private inline function get_visible():Bool
 	{
 		return clippedEnds != null;
 	}
@@ -263,13 +267,13 @@ class Edge {
 	 */
 	public function clipVertices(bounds:Rectangle):Void
 	{
-		var xmin:Number = bounds.x;
-		var ymin:Number = bounds.y;
-		var xmax:Number = bounds.right();
-		var ymax:Number = bounds.bottom();
+		var xmin:Float = bounds.x;
+		var ymin:Float = bounds.y;
+		var xmax:Float = bounds.right;
+		var ymax:Float = bounds.bottom;
 		
 		var vertex0:Vertex, vertex1:Vertex;
-		var x0:Number, x1:Number, y0:Number, y1:Number;
+		var x0:Float, x1:Float, y0:Float, y1:Float;
 		
 		if (a == 1.0 && b >= 0.0)
 		{
@@ -377,16 +381,16 @@ class Edge {
 			}
 		}
 
-		clippedEnds = new Dictionary<Point>();
+		clippedEnds = new Dictionary<String, Point>();
 		if (vertex0 == leftVertex)
 		{
-			clippedEnds.set(LR.LEFT.toString(), {x:x0, y:y0});
-			clippedEnds.set(LR.RIGHT.toString(), {x:x1, y:y1});
+			clippedEnds.set(LR.LEFT.toString(), new Point(x0, y0));
+			clippedEnds.set(LR.RIGHT.toString(), new Point(x1, y1));
 		}
 		else
 		{
-			clippedEnds.set(LR.RIGHT.toString(), {x:x0, y:y0});
-			clippedEnds.set(LR.LEFT.toString(), {x:x1, y:y1});
+			clippedEnds.set(LR.RIGHT.toString(), new Point(x0, y0));
+			clippedEnds.set(LR.LEFT.toString(), new Point(x1, y1));
 		}
 	}
 	

@@ -1,16 +1,18 @@
 package voronoimap;
 
-import as3.ConversionCore;
 import as3.PointCore;
-import as3.Rectangle;
-import as3.TypeDefs;
 import com.nodename.delaunay.Voronoi;
 import com.nodename.geom.LineSegment;
 import de.polygonal.math.PM_PRNG;
 import haxe.Timer;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl.utils.Dictionary;
 import voronoimap.graph.Center;
 import voronoimap.graph.Corner;
 import voronoimap.graph.Edge;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 
 using as3.ConversionCore;
 using as3.PointCore;
@@ -34,7 +36,7 @@ class Map {
 	 * islandShape function uses both of them to determine whether any
 	 * point should be water or land.
 	 */
-    public var islandShape:Point->Boolean;
+    public var islandShape:Point->Bool;
 
 	/**
 	 * Island details are controlled by this random generator. The
@@ -49,10 +51,10 @@ class Map {
 	/**
 	 * Only useful during map construction
 	 */
-    public var points:Vector<Point>;
-    public var centers:Vector<Center>;
-    public var corners:Vector<Corner>;
-    public var edges:Vector<Edge>;
+    public var points:Array<Point>;
+    public var centers:Array<Center>;
+    public var corners:Array<Corner>;
+    public var edges:Array<Edge>;
 
 	/**
 	 * Make a new map.
@@ -68,7 +70,7 @@ class Map {
     /**
      * Random parameters governing the overall shape of the island
      */
-    public function newIsland(islandShape:Point->Boolean, variant:Int):Void {
+    public function newIsland(islandShape:Point->Bool, variant:Int):Void {
 		this.islandShape = islandShape;
 		mapRandom.seed = variant;
     }
@@ -193,10 +195,10 @@ class Map {
 			corners.splice(0, corners.length);
 		}
 		// Clear the previous graph data.
-		if (points == null) points = new Vector<Point>();
-		if (edges == null) edges = new Vector<Edge>();
-		if (centers == null) centers = new Vector<Center>();
-		if (corners == null) corners = new Vector<Corner>();
+		if (points == null) points = new Array<Point>();
+		if (edges == null) edges = new Array<Edge>();
+		if (centers == null) centers = new Array<Center>();
+		if (corners == null) corners = new Array<Corner>();
       
 		// Disabled for Haxe
 		//System.gc();
@@ -208,11 +210,11 @@ class Map {
 	 * ocean. We'll determine ocean later by looking at what's
 	 * connected to ocean.
 	 */
-    public function generateRandomPoints( NUM_POINTS : Int ) : Vector<Point> {
-		var p:Point, i:Int, points:Vector<Point> = new Vector<Point>();
+    public function generateRandomPoints( NUM_POINTS : Int ) : Array<Point> {
+		var p:Point, i:Int, points:Array<Point> = new Array<Point>();
 		for (i in 0...NUM_POINTS) {
-			p = {x:mapRandom.nextDoubleRange(10, SIZE.width-10),
-			y:mapRandom.nextDoubleRange(10, SIZE.height-10) };
+			p = new Point(mapRandom.nextDoubleRange(10, SIZE.width-10),
+			mapRandom.nextDoubleRange(10, SIZE.height-10));
 			points.push(p);
 		}
 		return points;
@@ -221,7 +223,7 @@ class Map {
     /**
      * Improve the random set of points with Lloyd Relaxation.
      */
-    public function improveRandomPoints( points : Vector<Point>, numLloydIterations : Int ) : Void {
+    public function improveRandomPoints( points : Array<Point>, numLloydIterations : Int ) : Void {
       // We'd really like to generate "blue noise". Algorithms:
       // 1. Poisson dart throwing: check each new point against all
       //     existing points, and reject it if it's too close.
@@ -233,7 +235,7 @@ class Map {
       // Option 3 is implemented here. If it's run for too many iterations,
       // it will turn into a grid, but convergence is very slow, and we only
       // run it a few times.
-		var i:Int, p:Point, q:Point, voronoi:Voronoi, region:Vector<Point>;
+		var i:Int, p:Point, q:Point, voronoi:Voronoi, region:Array<Point>;
 		for (i in 0...numLloydIterations) {
 			voronoi = new Voronoi(points, null, new Rectangle(0, 0, SIZE.width, SIZE.height));
 			for (p in points) {
@@ -263,7 +265,7 @@ class Map {
 	 * polygons tend to be more uniform after this step.
 	 */
     public function improveCorners():Void {
-		var newCorners:Vector<Point> = new Vector<Point>();
+		var newCorners:Array<Point> = new Array<Point>();
 		var q:Corner, r:Center, point:Point, i:Int, edge:Edge;
 
 		// First we compute the average of the centers next to each corner.
@@ -271,7 +273,7 @@ class Map {
 			if (q.border) {
 				newCorners[q.index] = q.point;
 			} else {
-				point = {x:0.0, y:0.0};
+				point = new Point();
 				for (r in q.touches) {
 					point.x += r.point.x;
 					point.y += r.point.y;
@@ -302,7 +304,7 @@ class Map {
 	 * of a vector because the redistribution algorithms want to sort
 	 * this array using Array.sortOn.
 	 */
-    public function landCorners(corners:Vector<Corner>):Array<Corner> {
+    public function landCorners(corners:Array<Corner>):Array<Corner> {
 		var q:Corner, locations:Array<Corner> = [];
 		for (q in corners) {
 			if (!q.ocean && !q.coast) {
@@ -322,10 +324,10 @@ class Map {
 	 * For boundary polygons, the Delaunay edge will have one null
 	 * point, and the Voronoi edge may be null.
 	 */
-    public function buildGraph(points:Vector<Point>, voronoi:Voronoi):Void {
+    public function buildGraph(points:Array<Point>, voronoi:Voronoi):Void {
       var p:Center, q:Corner, point:Point, other:Point;
-      var libedges:Vector<com.nodename.delaunay.Edge> = voronoi.edges();
-      var centerLookup:Dictionary<Center> = new Dictionary<Center>();
+      var libedges:Array<com.nodename.delaunay.Edge> = voronoi.edges();
+      var centerLookup:Dictionary<String, Center> = new Dictionary<String, Center>();
 
       // Build Center objects for each of the points, and a lookup map
       // to find those Center objects again as we build the graph
@@ -333,9 +335,9 @@ class Map {
           p = new Center();
           p.index = centers.length;
           p.point = point;
-          p.neighbors = new  Vector<Center>();
-          p.borders = new Vector<Edge>();
-          p.corners = new Vector<Corner>();
+          p.neighbors = new  Array<Center>();
+          p.borders = new Array<Edge>();
+          p.corners = new Array<Corner>();
           centers.push(p);
           centerLookup.set(point.hash(), p);
         }
@@ -361,8 +363,8 @@ class Map {
 		for (bucket in Std.int(point.x) - 1...Std.int(point.x) + 2) {
 			if (_cornerMap[bucket] != null) {
 				for (q in _cornerMap[bucket]) {
-				  var dx:Number = point.x - q.point.x;
-				  var dy:Number = point.y - q.point.y;
+				  var dx:Float = point.x - q.point.x;
+				  var dy:Float = point.y - q.point.y;
 				  if (dx * dx + dy * dy < 1e-6) {
 					return q;
 				  }
@@ -377,9 +379,9 @@ class Map {
         q.point = point;
         q.border = (point.x == 0 || point.x == SIZE.width
                     || point.y == 0 || point.y == SIZE.height);
-        q.touches = new Vector<Center>();
-        q.protrudes = new Vector<Edge>();
-        q.adjacent = new Vector<Corner>();
+        q.touches = new Array<Center>();
+        q.protrudes = new Array<Edge>();
+        q.adjacent = new Array<Corner>();
         _cornerMap[bucket].push(q);
         return q;
       }
@@ -408,10 +410,10 @@ class Map {
           if (edge.v0 != null) { edge.v0.protrudes.push(edge); }
           if (edge.v1 != null) { edge.v1.protrudes.push(edge); }
 
-          function addToCornerList(v:Vector<Corner>, x:Corner):Void {
+          function addToCornerList(v:Array<Corner>, x:Corner):Void {
             if (x != null && v.indexOf(x) < 0) { v.push(x);}
           }
-          function addToCenterList(v:Vector<Center>, x:Center):Void {
+          function addToCenterList(v:Array<Center>, x:Center):Void {
             if (x != null && v.indexOf(x) < 0) { v.push(x); }
           }
           
@@ -487,7 +489,7 @@ class Map {
             // Every step up is epsilon over water or 1 over land. The
             // number doesn't matter because we'll rescale the
             // elevations later.
-            var newElevation:Number = 0.01 + q.elevation;
+            var newElevation:Float = 0.01 + q.elevation;
             if (!q.water && !s.water) {
               newElevation += 1;
             }
@@ -511,8 +513,8 @@ class Map {
     public function redistributeElevations(locations:Array<Corner>):Void {
       // SCALE_FACTOR increases the mountain area. At 1.0 the maximum
       // elevation barely shows up on the map, so we set it to 1.1.
-      var SCALE_FACTOR:Number = 1.1;
-      var i:Int, y:Number, x:Number;
+      var SCALE_FACTOR:Float = 1.1;
+      var i:Int, y:Float, x:Float;
 
 	  //Haxe port
       //locations.sortOn('elevation', Array.NUMERIC);
@@ -633,7 +635,7 @@ class Map {
      * Polygon elevations are the average of the elevations of their corners.
      */
     public function assignPolygonElevations():Void {
-		var p:Center, q:Corner, sumElevation:Number;
+		var p:Center, q:Corner, sumElevation:Float;
 		for (p in centers) {
 			sumElevation = 0.0;
 			for (q in p.corners) {
@@ -670,7 +672,7 @@ class Map {
 	 * polygon can be marked as being in one watershed.
 	 */
     public function calculateWatersheds():Void {
-      var q:Corner, r:Corner, i:Int, changed:Boolean;
+      var q:Corner, r:Corner, i:Int, changed:Bool;
       
       // Initially the watershed pointer points downslope one step.      
       for (q in corners) {
@@ -746,7 +748,7 @@ class Map {
 	 * not spread it (we set it at the end, after propagation).
 	 */
     public function assignCornerMoisture():Void {
-      var q:Corner, r:Corner, newMoisture:Number;
+      var q:Corner, r:Corner, newMoisture:Float;
       var queue:Array<Corner> = [];
       // Fresh water
       for (q in corners) {
@@ -780,7 +782,7 @@ class Map {
      * Polygon moisture is the average of the moisture at corners
      */
     public function assignPolygonMoisture():Void {
-      var p:Center, q:Corner, sumMoisture:Number;
+      var p:Center, q:Corner, sumMoisture:Float;
       for (p in centers) {
           sumMoisture = 0.0;
           for (q in p.corners) {
@@ -857,8 +859,8 @@ class Map {
     /**
      * Determine whether a given point should be on the island or in the water.
      */
-    public function inside(p:Point):Boolean {
-      return islandShape( { x:2 * (p.x / SIZE.width - 0.5), y : 2 * (p.y / SIZE.height - 0.5) } );
+    public function inside(p:Point):Bool {
+      return islandShape( new Point(2 * (p.x / SIZE.width - 0.5), 2 * (p.y / SIZE.height - 0.5)));
     }
 	
 	// ------------------------------------------------------------------------

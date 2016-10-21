@@ -1,24 +1,26 @@
 package com.nodename.delaunay;
 
-import as3.NumberCore;
-import as3.Rectangle;
-import as3.TypeDefs;
 import com.nodename.geom.Circle;
 import com.nodename.utils.IDisposable;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+//import as3.Rectangle;
+//import as3.TypeDefs;
 
 using Std;
 using as3.BitmapDataCore;
 
 class SiteList implements IDisposable {
 
-	private var _sites:Vector<Site>;
+	private var _sites:Array<Site>;
 	private var _currentIndex:Int;
 	
-	private var _sorted:Boolean;
+	private var _sorted:Bool;
 	
 	public function new()
 	{
-		_sites = new Vector<Site>();
+		_sites = new Array<Site>();
 		_sorted = false;
 	}
 
@@ -70,7 +72,7 @@ class SiteList implements IDisposable {
 			_currentIndex = 0;
 			_sorted = true;
 		}
-		var xmin:Number, xmax:Number, ymin:Number, ymax:Number;
+		var xmin:Float, xmax:Float, ymin:Float, ymax:Float;
 		if (_sites.length == 0)
 		{
 			return new Rectangle(0, 0, 0, 0);
@@ -96,9 +98,9 @@ class SiteList implements IDisposable {
 		return new Rectangle(xmin, ymin, xmax - xmin, ymax - ymin);
 	}
 
-	public function siteColors(referenceImage:BitmapData = null):Vector<Int>
+	public function siteColors(referenceImage:BitmapData = null):Array<Int>
 	{
-		var colors:Vector<Int> = new Vector<Int>();
+		var colors:Array<Int> = new Array<Int>();
 		for (site in _sites)
 		{
 			colors.push(referenceImage != null ? referenceImage.getPixel(site.x.int(), site.y.int()) : site.color);
@@ -106,9 +108,9 @@ class SiteList implements IDisposable {
 		return colors;
 	}
 
-	public function siteCoords():Vector<Point>
+	public function siteCoords():Array<Point>
 	{
-		var coords:Vector<Point> = new Vector<Point>();
+		var coords:Array<Point> = new Array<Point>();
 		for (site in _sites)
 		{
 			coords.push(site.coord);
@@ -122,12 +124,12 @@ class SiteList implements IDisposable {
 	 * if the region is infinite, return a circle of radius 0.
 	 * 
 	 */
-	public function circles():Vector<Circle>
+	public function circles():Array<Circle>
 	{
-		var circles:Vector<Circle> = new Vector<Circle>();
+		var circles:Array<Circle> = new Array<Circle>();
 		for (site in _sites)
 		{
-			//var radius:Number = 0;
+			//var radius:Float = 0;
 			var nearestEdge:Edge = site.nearestEdge();
 			
 			var radius = (!nearestEdge.isPartOfConvexHull())? (nearestEdge.sitesDistance() * 0.5): 0;
@@ -137,9 +139,9 @@ class SiteList implements IDisposable {
 		return circles;
 	}
 
-	public function regions(plotBounds:Rectangle):Vector<Vector<Point>>
+	public function regions(plotBounds:Rectangle):Array<Array<Point>>
 	{
-		var regions:Vector<Vector<Point>> = new Vector<Vector<Point>>();
+		var regions:Array<Array<Point>> = new Array<Array<Point>>();
 		for (site in _sites)
 		{
 			regions.push(site.region(plotBounds));

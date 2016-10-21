@@ -1,16 +1,18 @@
 package com.nodename.delaunay;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 import com.nodename.geom.LineSegment;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
 
 using Lambda;
 using as3.BitmapDataCore;
 
 class Delaunay {
 
-	public static function delaunayLinesForEdges(edges:Vector<Edge>):Vector<LineSegment>
+	public static function delaunayLinesForEdges(edges:Array<Edge>):Array<LineSegment>
 	{
-		var segments:Vector<LineSegment> = new Vector<LineSegment>();
+		var segments:Array<LineSegment> = new Array<LineSegment>();
 		for (edge in edges)
 		{
 			segments.push(edge.delaunayLine());
@@ -18,33 +20,33 @@ class Delaunay {
 		return segments;
 	}
 
-	public static function selectEdgesForSitePoint(coord:Point, edgesToTest:Vector<Edge>):Vector<Edge>
+	public static function selectEdgesForSitePoint(coord:Point, edgesToTest:Array<Edge>):Array<Edge>
 	{
-		return edgesToTest.filter(function (edge:Edge):Boolean {
+		return edgesToTest.filter(function (edge:Edge):Bool {
 			return ((edge.leftSite != null && edge.leftSite.coord == coord)
 			||  (edge.rightSite != null && edge.rightSite.coord == coord));
 		}).array();
 	}	
 
-	public static function selectNonIntersectingEdges(keepOutMask:BitmapData, edgesToTest:Vector<Edge>):Vector<Edge>
+	public static function selectNonIntersectingEdges(keepOutMask:BitmapData, edgesToTest:Array<Edge>):Array<Edge>
 	{
 		if (keepOutMask == null)
 		{
 			return edgesToTest;
 		}
 		
-		var zeroPoint:Point = {x:0.0, y:0.0};
-		return edgesToTest.filter(function (edge:Edge):Boolean {
+		var zeroPoint:Point = new Point();
+		return edgesToTest.filter(function (edge:Edge):Bool {
 			var delaunayLineBmp:BitmapData = edge.makeDelaunayLineBmp();
-			var notIntersecting:Boolean = !(keepOutMask.hitTest(zeroPoint, 1, delaunayLineBmp, zeroPoint, 1));
+			var notIntersecting:Bool = !(keepOutMask.hitTest(zeroPoint, 1, delaunayLineBmp, zeroPoint, 1));
 			delaunayLineBmp.dispose();
 			return notIntersecting;
 		}).array();
 	}
 	
-	public static function visibleLineSegments(edges:Vector<Edge>):Vector<LineSegment>
+	public static function visibleLineSegments(edges:Array<Edge>):Array<LineSegment>
 	{
-		var segments:Vector<LineSegment> = new Vector<LineSegment>();
+		var segments:Array<LineSegment> = new Array<LineSegment>();
 	
 		for (edge in edges)
 		{

@@ -1,23 +1,24 @@
 package com.nodename.geom;
+import openfl.geom.Point;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 
 class Polygon {
 
-	private var _vertices:Vector<Point>;
+	private var _vertices:Array<Point>;
 
-	public function new(vertices:Vector<Point>) {
+	public function new(vertices:Array<Point>) {
 		_vertices = vertices;
 	}
 	
-	public function area():Number
+	public function area():Float
 	{
 		return Math.abs(signedDoubleArea() * 0.5);
 	}
 
 	public function winding():Winding
 	{
-		var signedDoubleArea:Number = signedDoubleArea();
+		var signedDoubleArea:Float = signedDoubleArea();
 		if (signedDoubleArea < 0)
 		{
 			return Winding.CLOCKWISE;
@@ -29,12 +30,12 @@ class Polygon {
 		return Winding.NONE;
 	}
 
-	private function signedDoubleArea():Number
+	private function signedDoubleArea():Float
 	{
 		var index:UInt, nextIndex:UInt;
 		var n:UInt = _vertices.length;
 		var point:Point, next:Point;
-		var signedDoubleArea:Number = 0;
+		var signedDoubleArea:Float = 0;
 		for (index in 0...n)
 		{
 			nextIndex = (index + 1) % n;

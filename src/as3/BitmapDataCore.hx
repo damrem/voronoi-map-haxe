@@ -1,6 +1,8 @@
 package as3;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 
 class BitmapDataCore {
 
@@ -16,15 +18,15 @@ class BitmapDataCore {
 
 	public static function getPixel(bd:BitmapData, x:Int, y:Int):Int {
 		throw "not implemented";
-		return null;
+		return 0;
 	}
 
-	public static function hitTest(bd:BitmapData, firstPoint:Point, firstAlphaThreshold:UInt, secondObject:BitmapData, secondBitmapDataPoint:Point = null, secondAlphaThreshold:UInt = 1):Boolean {
+	public static function hitTest(bd:BitmapData, firstPoint:Point, firstAlphaThreshold:UInt, secondObject:BitmapData, secondBitmapDataPoint:Point = null, secondAlphaThreshold:UInt = 1):Bool {
 		throw "not implemented";
-		return null;
+		return false;
 	}
 	
-	public static function perlinNoise(bd:BitmapData, baseX:Number, baseY:Number, numOctaves:Int, randomSeed:Int, stitch:Boolean, fractalNoise:Boolean):BitmapData {
+	public static function perlinNoise(bd:BitmapData, baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool):BitmapData {
 		throw "not implemented";
 		return null;
 	}

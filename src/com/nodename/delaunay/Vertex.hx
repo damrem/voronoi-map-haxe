@@ -1,14 +1,15 @@
 package com.nodename.delaunay;
+import openfl.geom.Point;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 
 using Math;
 
 class Vertex implements ICoord {
 
 	public static var VERTEX_AT_INFINITY:Vertex = new Vertex(Math.NaN, Math.NaN);
-	private static var _pool:Vector<Vertex> = new Vector<Vertex>();
-	private static function create(x:Number, y:Number):Vertex
+	private static var _pool:Array<Vertex> = new Array<Vertex>();
+	private static function create(x:Float, y:Float):Vertex
 	{
 		if (x.isNaN() || y.isNaN())
 		{
@@ -33,14 +34,14 @@ class Vertex implements ICoord {
 	}
 	public var vertexIndex(default, null):Int;
 
-	private function new(x:Number, y:Number)
+	private function new(x:Float, y:Float)
 	{
 		init(x, y);
 	}
 
-	private function init(x:Number, y:Number):Vertex
+	private function init(x:Float, y:Float):Vertex
 	{
-		_coord = {x:x, y:y};
+		_coord = new Point(x, y);
 		return this;
 	}
 	
@@ -72,8 +73,8 @@ class Vertex implements ICoord {
 	{
 		var edge0:Edge, edge1:Edge, edge:Edge;
 		var halfedge:Halfedge;
-		var determinant:Number, intersectionX:Number, intersectionY:Number;
-		var rightOfSite:Boolean;
+		var determinant:Float, intersectionX:Float, intersectionY:Float;
+		var rightOfSite:Bool;
 	
 		edge0 = halfedge0.edge;
 		edge1 = halfedge1.edge;
@@ -114,13 +115,13 @@ class Vertex implements ICoord {
 		return Vertex.create(intersectionX, intersectionY);
 	}
 
-	public var x(get_x, null):Number;
-	private inline function get_x():Number
+	public var x(get_x, null):Float;
+	private inline function get_x():Float
 	{
 		return _coord.x;
 	}
-	public var y(get_y, null):Number;
-	private inline function get_y():Number
+	public var y(get_y, null):Float;
+	private inline function get_y():Float
 	{
 		return _coord.y;
 	}

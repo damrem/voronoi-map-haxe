@@ -1,18 +1,19 @@
 package com.nodename.delaunay;
+import openfl.geom.Point;
 
-import as3.TypeDefs;
+//import as3.TypeDefs;
 
 class HalfedgePriorityQueue {
 
-	private var _hash:Vector<Halfedge>;
+	private var _hash:Array<Halfedge>;
 	private var _count:Int;
 	private var _minBucket:Int;
 	private var _hashsize:Int;
 	
-	private var _ymin:Number;
-	private var _deltay:Number;
+	private var _ymin:Float;
+	private var _deltay:Float;
 
-	public function new(ymin:Number, deltay:Number, sqrt_nsites:Int)
+	public function new(ymin:Float, deltay:Float, sqrt_nsites:Int)
 	{
 		_ymin = ymin;
 		_deltay = deltay;
@@ -37,7 +38,7 @@ class HalfedgePriorityQueue {
 	
 		_count = 0;
 		_minBucket = 0;
-		_hash = new Vector<Halfedge>();
+		_hash = new Array<Halfedge>();
 		// dummy Halfedge at the top of each hash
 		for (i in 0..._hashsize)
 		{
@@ -93,7 +94,7 @@ class HalfedgePriorityQueue {
 		return theBucket;
 	}
 	
-	private function isEmpty(bucket:Int):Boolean
+	private function isEmpty(bucket:Int):Bool
 	{
 		return (_hash[bucket].nextInPriorityQueue == null);
 	}
@@ -110,7 +111,7 @@ class HalfedgePriorityQueue {
 		}
 	}
 
-	public function empty():Boolean
+	public function empty():Bool
 	{
 		return _count == 0;
 	}
@@ -123,7 +124,7 @@ class HalfedgePriorityQueue {
 	{
 		adjustMinBucket();
 		var answer:Halfedge = _hash[_minBucket].nextInPriorityQueue;
-		return {x:answer.vertex.x, y:answer.ystar};
+		return new Point(answer.vertex.x, answer.ystar);
 	}
 
 	/**
